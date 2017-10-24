@@ -15,6 +15,8 @@ public class ConsumerController {
 
 	@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
 	public String helloConsumer() {
+//		UriComponents uriComponents = UriComponentsBuilder.fromUriString("").build().expand("").encode();
+//		uriComponents.toUri();
 		return restTemplate.getForEntity(HELLO_SERVICE_URL, String.class).getBody();
 	}
 }
