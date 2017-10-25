@@ -18,6 +18,7 @@ public class UserCommand extends HystrixCommand<String> {
 		return restTemplate.getForObject("http://HELLO-SERVICE/hello", String.class);
 	}
 
+	// 实现服务降级逻辑
 	@Override
 	protected String getFallback() {
 		return "error";
