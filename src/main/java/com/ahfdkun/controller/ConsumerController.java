@@ -21,10 +21,10 @@ public class ConsumerController {
 	@Autowired
 	HelloService helloService;
 
-	/*@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
+	@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
 	public String helloConsumer() {
 		return helloService.helloService();
-	}*/
+	}
 	
 	/*@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
 	public String helloConsumer() throws Exception {
@@ -40,12 +40,22 @@ public class ConsumerController {
 		// 只有订阅后才会执行
 		Observable<String> observable = new UserCommand(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ABC")).andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(10000)), restTemplate).toObservable();
 		final String[] s = new String[1];
+		final Object lock = new Object(); 
 		observable.subscribe(new Action1<String>() {
 			@Override
 			public void call(String t) {
 				s[0] = t;
+				synchronized (lock) {
+					lock.notify();
+				}
 			}
 		});
+		synchronized (lock) {
+			if (s[0] == null) {
+				s[0] = "error1";
+				lock.wait(5000);
+			}
+		}
 		return s[0];
 	}*/
 	
@@ -62,7 +72,7 @@ public class ConsumerController {
 		return s[0];
 	}*/
 	
-	@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
+	/*@RequestMapping(value = "/ribbon-consumer", method = RequestMethod.GET)
 	public String helloConsumer() throws Exception {
 		// 只有订阅后才会执行
 		Observable<String> observable = new UserObservableCommand(com.netflix.hystrix.HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ABC")).andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(10000)), restTemplate).toObservable();
@@ -74,6 +84,6 @@ public class ConsumerController {
 			}
 		});
 		return s[0];
-	}
+	}*/
 	
 }

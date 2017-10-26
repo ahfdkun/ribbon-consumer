@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.ObservableExecutionMode;
 import com.netflix.hystrix.contrib.javanica.command.AsyncResult;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import rx.Observable;
 import rx.Observable.OnSubscribe;
@@ -17,7 +18,7 @@ import rx.Subscriber;
 @Service
 public class HelloService {
 
-	private static final String HELLO_SERVICE_URL = "http://HELLO-SERVICE/hello";
+	private static final String HELLO_SERVICE_URL = "http://HELLO-SERVICE/hello1";
 	
 	@Autowired
 	RestTemplate restTemplate;
@@ -25,7 +26,11 @@ public class HelloService {
 	// 同步
 	@HystrixCommand(fallbackMethod = "helloFallback")
 	public String helloService() {
-		return restTemplate.getForEntity(HELLO_SERVICE_URL, String.class).getBody();
+		try {
+			return restTemplate.getForEntity(HELLO_SERVICE_URL, String.class).getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("xxxx");
+		}
 	}
 	
 	
@@ -58,7 +63,9 @@ public class HelloService {
 		});
 	}
 	
-	public String helloFallback() {
+	// 可以传递异常
+	public String helloFallback(Throwable e) {
+		System.out.println(e.getMessage());
 		return "error";
 	}
 	
