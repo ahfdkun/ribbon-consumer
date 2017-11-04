@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.ObservableExecutionMode;
+import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
 import com.netflix.hystrix.contrib.javanica.command.AsyncResult;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 
@@ -18,13 +19,14 @@ import rx.Subscriber;
 @Service
 public class HelloService {
 
-	private static final String HELLO_SERVICE_URL = "http://HELLO-SERVICE/hello1";
+	private static final String HELLO_SERVICE_URL = "http://HELLO-SERVICE/hello";
 	
 	@Autowired
 	RestTemplate restTemplate;
 
 	// 同步
 	@HystrixCommand(fallbackMethod = "helloFallback")
+	@CacheResult(cacheKeyMethod = "getCacheKey")
 	public String helloService() {
 		try {
 			return restTemplate.getForEntity(HELLO_SERVICE_URL, String.class).getBody();
@@ -69,4 +71,7 @@ public class HelloService {
 		return "error";
 	}
 	
+	public String getCacheKey() {
+		return "cache_key";
+	}
 }
