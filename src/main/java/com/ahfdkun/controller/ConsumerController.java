@@ -1,5 +1,9 @@
 package com.ahfdkun.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,12 +11,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.ahfdkun.command.UserCollapserCommand;
 import com.ahfdkun.command.UserGetCommand;
 import com.ahfdkun.command.UserPostCommand;
+import com.ahfdkun.domain.User;
+import com.ahfdkun.service.HelloService;
+import com.ahfdkun.service.UserService;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
-
-import rx.Observable;
-import rx.functions.Action1;
 
 @RestController
 public class ConsumerController {
@@ -101,6 +106,28 @@ public class ConsumerController {
 	public String postUser(@PathVariable Long id) throws Exception {
 		// 只有订阅后才会执行
 		return new UserPostCommand(restTemplate, id).execute();
+	}
+	
+	@Autowired
+	UserService userService;
+	
+	@RequestMapping(value = "/hystrixCollapser", method = RequestMethod.GET)
+	public List<User> hystrixCollapser() throws Exception {
+		HystrixRequestContext context = HystrixRequestContext.initializeContext();
+		// 只有订阅后才会执行
+		Future<User> user1 = new UserCollapserCommand(userService, 1L).queue();
+		Future<User> user2 = new UserCollapserCommand(userService, 2L).queue();
+		Future<User> user3 = new UserCollapserCommand(userService, 3L).queue();
+		Future<User> user4 = new UserCollapserCommand(userService, 4L).queue();
+		Future<User> user5 = new UserCollapserCommand(userService, 5L).queue();
+		List<User> users = new ArrayList<>();
+		users.add(user1.get());
+		users.add(user2.get());
+		users.add(user3.get());
+		users.add(user4.get());
+		users.add(user5.get());
+		context.close();
+		return users;
 	}
 	
 }
