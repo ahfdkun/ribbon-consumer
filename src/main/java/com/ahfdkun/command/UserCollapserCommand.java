@@ -31,7 +31,7 @@ public class UserCollapserCommand extends HystrixCollapser<List<User>, User, Lon
 
 	@Override
 	protected HystrixCommand<List<User>> createCommand(Collection<com.netflix.hystrix.HystrixCollapser.CollapsedRequest<User, Long>> requests) {
-		List<Long> userIds = new ArrayList<Long>(requests.size());
+		List<Long> userIds = new ArrayList<>(requests.size());
 		userIds.addAll(requests.stream().map(CollapsedRequest::getArgument).collect(Collectors.toList()));
 		return new UserBatchCommand(userService, userIds);
 	}
